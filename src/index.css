@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-violet-50 font-sans text-slate-900 antialiased dark:bg-night-950 dark:text-slate-100;
+    -webkit-tap-highlight-color: transparent;
+  }
+  ::selection {
+    @apply bg-neon-pink/40;
+  }
+  /* iOS feel: no rubber-band reveal of white behind the page, no long-press
+     callout menu or text selection on controls. Inputs stay selectable. */
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+  button,
+  a,
+  [role='checkbox'],
+  [role='radio'],
+  [role='switch'] {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation; /* no double-tap zoom delay */
+  }
+}
+
+@layer components {
+  /* Frosted glass card with a faint neon edge. */
+  .card {
+    @apply rounded-3xl border border-violet-200/80 bg-white/70 p-4 shadow-lg shadow-violet-200/50 backdrop-blur-xl dark:border-white/10 dark:bg-night-900/60 dark:shadow-glass;
+  }
+  .input {
+    @apply w-full rounded-2xl border border-violet-200 bg-white/80 px-3 py-2.5 text-base text-slate-900 transition placeholder:text-slate-400 focus:border-neon-pink focus:outline-none focus:ring-4 focus:ring-neon-pink/20 dark:border-white/10 dark:bg-night-950/70 dark:text-slate-100 dark:focus:border-neon-cyan dark:focus:shadow-neon-cyan dark:focus:ring-neon-cyan/10;
+  }
+  /* Every button squishes a little when pressed. */
+  .btn {
+    @apply inline-flex min-h-[44px] select-none items-center justify-center gap-2 rounded-2xl px-4 py-2 font-semibold transition duration-150 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-night-950 disabled:opacity-50;
+  }
+  /* Animated pink→violet→cyan gradient with a glow. */
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-neon-pink via-neon-violet to-neon-cyan bg-[length:200%_200%] text-white shadow-neon-pink animate-gradient-pan hover:brightness-110;
+  }
+  .btn-secondary {
+    @apply btn border border-violet-300 bg-white/70 text-violet-900 hover:border-neon-pink hover:text-neon-pink dark:border-white/15 dark:bg-white/5 dark:text-slate-100 dark:hover:border-neon-cyan dark:hover:text-neon-cyan dark:hover:shadow-neon-cyan;
+  }
+  .btn-danger {
+    @apply btn bg-gradient-to-r from-red-500 to-neon-pink text-white shadow-[0_0_18px_rgba(255,43,100,.5)] hover:brightness-110;
+  }
+  .icon-btn {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-full text-violet-700 transition active:scale-90 hover:bg-violet-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-neon-cyan;
+  }
+  .label {
+    @apply mb-1 block text-sm font-semibold text-violet-900 dark:text-violet-200;
+  }
+  .page-title {
+    @apply bg-gradient-to-r from-neon-pink via-neon-violet to-neon-cyan bg-clip-text text-3xl font-bold tracking-tight text-transparent;
+  }
+  .muted {
+    @apply text-slate-500 dark:text-violet-200/60;
+  }
+  .neon-text {
+    text-shadow: 0 0 8px currentColor; /* soft glow for in-app text */
+  }
+  /* Full-strength neon, used on the loading screen only. */
+  .neon-text-strong {
+    text-shadow: 0 0 4px currentColor, 0 0 14px currentColor, 0 0 32px currentColor;
+  }
+}
+
+/* ---------- Background: drifting neon blobs + synthwave grid ---------- */
+.neon-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.neon-bg .blob {
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.18;
+}
+.dark .neon-bg .blob {
+  opacity: 0.2;
+}
+.neon-bg .grid-floor {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: -10%;
+  height: 55%;
+  background-image: linear-gradient(rgba(255, 43, 214, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.3) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(380px) rotateX(62deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, black 10%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to top, black 10%, transparent 85%);
+  animation: grid-scroll 3s linear infinite;
+  opacity: 0.12;
+}
+.dark .neon-bg .grid-floor {
+  opacity: 0.2;
+}
+@keyframes grid-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 48px;
+  }
+}
+
+/* ---------- iOS sheet: the page behind shrinks back and dims ---------- */
+#app-main {
+  transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), filter 0.45s, border-radius 0.45s;
+  transform-origin: 50% 0;
+}
+.sheet-open #app-main {
+  transform: scale(0.93) translateY(calc(env(safe-area-inset-top) + 12px));
+  border-radius: 28px;
+  filter: brightness(0.6);
+}
+
+/* ---------- Click sparks (see ClickSparks.tsx) ---------- */
+.spark-ring {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 9999px;
+  border: 2px solid var(--c);
+  box-shadow: 0 0 10px var(--c), inset 0 0 6px var(--c);
+  pointer-events: none;
+  z-index: 60;
+  animation: spark-ring 550ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes spark-ring {
+  to {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+.spark-dot {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 9999px;
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c);
+  pointer-events: none;
+  z-index: 60;
+  animation: spark-dot 600ms cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+}
+@keyframes spark-dot {
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Respect people who turn animations off in their OS settings. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
