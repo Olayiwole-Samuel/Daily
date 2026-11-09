@@ -31,11 +31,17 @@ Note: data is still stored on the device (one slot per Google account). Signing 
 
 ## AI Coach (Part 2)
 
-The Coach tab builds a personal workout plan and a 7-day meal plan with Claude (`claude-sonnet-5-5`).
-The browser calls `POST /api/coach`, a Vercel serverless function (`api/coach.ts`) that holds the API key.
+The Coach tab builds a personal workout plan and a 7-day meal plan. There are two ways it can work:
 
-**Without a key the Coach still works**: the server returns a clearly labelled sample plan, so you can try
-every screen for free.
+- **Free planner (default, no API key, no cost):** `src/coach/rules/` builds the plan from the user's answers with
+  rules and built-in lists: an exercise library filtered by place, equipment, level and health; local meal lists
+  (Nigerian, Ghanaian, East African, plus general meals for other cuisines) filtered by diet, dislikes and budget, with
+  portions scaled to the calorie target. It also runs on the phone when the server can't be reached.
+- **AI (optional):** set `ANTHROPIC_API_KEY` and Claude (`claude-sonnet-5-5`) writes the plan instead, and can read
+  an optional photo. Without a key, photos never leave the phone.
+
+The browser calls `POST /api/coach`, a Vercel serverless function (`api/coach.ts`). `GET /api/coach` reports
+whether AI is on.
 
 ### Set the API key locally
 

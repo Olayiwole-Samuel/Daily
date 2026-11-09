@@ -132,12 +132,14 @@ export default function CoachPage() {
         </button>
       </div>
 
-      {plan.demo && (
+      {plan.demo ? (
         <p className="flex gap-2 rounded-2xl border border-neon-yellow/40 bg-neon-yellow/10 p-3 text-sm">
           <AlertTriangle className="h-5 w-5 shrink-0 text-neon-yellow" aria-hidden />
-          Sample plan: the server has no AI key yet, so this isn't personalised.
+          This is an old sample plan. Tap Regenerate plan for one built from your answers.
         </p>
-      )}
+      ) : plan.source === 'rules' ? (
+        <p className="muted text-xs">Built from your answers by the free planner.</p>
+      ) : null}
 
       {/* Today's workout */}
       <section className="card space-y-3" aria-labelledby="today-workout">
@@ -317,7 +319,7 @@ export default function CoachPage() {
           <button type="button" className="btn-primary min-h-[52px] w-full" onClick={regenerate} disabled={regenBusy}>
             {regenBusy ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Writing your new plan… (about a minute)
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Writing your new plan…
               </>
             ) : (
               <>

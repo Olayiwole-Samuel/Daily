@@ -108,7 +108,8 @@ export type AiPlan = z.infer<typeof AiPlanSchema>;
 export const CoachPlanSchema = AiPlanSchema.extend({
   createdAt: z.string(),
   safetyNotes: z.array(z.string()), // e.g. "Calories raised to a safe minimum"
-  demo: z.boolean().optional(), // true when the server had no API key (sample plan)
+  demo: z.boolean().optional(), // older plans: true when it was the fixed sample plan
+  source: z.enum(['ai', 'rules']).optional(), // who wrote it: Claude, or the free built-in planner
 });
 export type CoachPlan = z.infer<typeof CoachPlanSchema>;
 
@@ -160,6 +161,11 @@ export const CoachRequestSchema = z.object({
 export type CoachRequest = z.infer<typeof CoachRequestSchema>;
 
 export type CoachErrorCode = 'invalid_input' | 'under_18' | 'rate_limited' | 'ai_failed' | 'server_error';
+
+// GET /api/coach tells the app whether AI is switched on (an API key is set).
+export interface CoachInfo {
+  ai: boolean;
+}
 
 export type CoachResponse =
   | { ok: true; plan: CoachPlan; remainingToday: number }

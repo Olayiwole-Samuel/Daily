@@ -5,7 +5,7 @@ import { ArrowLeft, Camera, Dumbbell, Flame, ImagePlus, Pencil, Scale, ShieldChe
 import { useApp } from '../../state/AppContext';
 import type { CoachProfile, GoalBuild } from '../../coach/schema';
 import { compressPhoto, type CompressedPhoto } from '../../coach/photo';
-import { requestPlan } from '../../coach/api';
+import { getCoachInfo, requestPlan } from '../../coach/api';
 import { newId, todayISO } from '../../lib/dates';
 import { ChoiceCard, Chip, Disclaimer, Stepper } from '../../components/coach/Controls';
 
@@ -243,6 +243,12 @@ export default function CoachStartPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loadingLine, setLoadingLine] = useState(0);
   const [dislikeInput, setDislikeInput] = useState('');
+  // Whether the server uses AI. Without AI the photo is never sent anywhere:
+  // it can only be kept on this phone as a starting photo.
+  const [aiEnabled, setAiEnabled] = useState(false);
+  useEffect(() => {
+    getCoachInfo().then((info) => setAiEnabled(info.ai));
+  }, []);
   const fileInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
 
@@ -259,13 +265,20 @@ export default function CoachStartPage() {
     return () => window.clearInterval(timer);
   }, [submitting]);
 
+  // The latest step and answers. During the slide between steps the old step is
+  // still on screen for a moment; its Continue button must check the step we're
+  // really on, or a quick double tap could skip a step (like the health check).
+  const latest = useRef({ step, draft });
+  latest.current = { step, draft };
+
   function next() {
-    if (problem) {
+    const current = latest.current;
+    if (stepProblem(current.step, current.draft)) {
       setShowError(true);
       return;
     }
     setShowError(false);
-    setStep((s) => Math.min(7, s + 1));
+    setStep(Math.min(7, current.step + 1));
     window.scrollTo({ top: 0 });
   }
 
@@ -280,12 +293,20 @@ export default function CoachStartPage() {
     setPhotoError(null);
     try {
       set('photo', await compressPhoto(file));
+      if (!aiEnabled) set('savePhoto', true); // its only use without AI
     } catch (e) {
       setPhotoError(e instanceof Error ? e.message : "Couldn't use that photo.");
     }
   }
 
   async function createPlan() {
+    // Re-check every step before building, and jump back to anything missing.
+    const missing = [0, 1, 2, 3, 4, 5, 6].find((s) => stepProblem(s, draft));
+    if (missing !== undefined) {
+      setStep(missing);
+      setShowError(true);
+      return;
+    }
     const profile = toProfile(draft);
     setSubmitting(true);
     setSubmitError(null);
@@ -294,7 +315,8 @@ export default function CoachStartPage() {
 
     const result = await requestPlan({
       profile,
-      photo: draft.photo ? { mediaType: 'image/jpeg', data: draft.photo.base64 } : undefined,
+      // Only sent when AI is on (to describe body shape). Never sent to the free planner.
+      photo: aiEnabled && draft.photo ? { mediaType: 'image/jpeg', data: draft.photo.base64 } : undefined,
     });
     setSubmitting(false);
     if (!result.ok) {
@@ -335,7 +357,7 @@ export default function CoachStartPage() {
             </motion.p>
           </AnimatePresence>
         </div>
-        <p className="muted max-w-xs text-xs">This usually takes about a minute. Keep the app open.</p>
+        <p className="muted max-w-xs text-xs">{aiEnabled ? 'This usually takes about a minute. Keep the app open.' : 'Just a moment…'}</p>
       </div>
     );
   }
@@ -382,10 +404,17 @@ export default function CoachStartPage() {
                 <ShieldCheck className="h-6 w-6 shrink-0 text-neon-cyan" aria-hidden />
                 <div className="space-y-1">
                   <p className="font-semibold">A photo is optional</p>
-                  <p className="muted">
-                    If you add one, it's shrunk on your phone, sent <strong>once</strong> to the AI to describe your general body shape, and
-                    <strong> never saved on our server</strong>. Your numbers, not the photo, set your targets.
-                  </p>
+                  {aiEnabled ? (
+                    <p className="muted">
+                      If you add one, it's shrunk on your phone, sent <strong>once</strong> to the AI to describe your general body shape, and
+                      <strong> never saved on our server</strong>. Your numbers, not the photo, set your targets.
+                    </p>
+                  ) : (
+                    <p className="muted">
+                      Your photo <strong>stays on this phone</strong> as your starting picture, so you can compare later on the Progress screen. It is
+                      <strong> never uploaded</strong>. Your numbers set your plan.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -413,10 +442,10 @@ export default function CoachStartPage() {
               ) : (
                 <div className="space-y-3">
                   <img src={draft.photo.dataUrl} alt="Your photo preview" className="mx-auto max-h-72 rounded-2xl object-contain" />
-                  <label className="flex min-h-[48px] items-center gap-3 text-sm">
+                  {aiEnabled && <label className="flex min-h-[48px] items-center gap-3 text-sm">
                     <input type="checkbox" className="h-5 w-5 accent-pink-500" checked={draft.savePhoto} onChange={(e) => set('savePhoto', e.target.checked)} />
                     Save on this phone for progress comparison (never uploaded)
-                  </label>
+                  </label>}
                   <button type="button" className="btn-secondary w-full" onClick={() => set('photo', undefined)}>
                     <Trash2 className="h-4 w-4" aria-hidden /> Remove photo
                   </button>
