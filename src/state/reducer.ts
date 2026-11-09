@@ -1,4 +1,5 @@
-import type { AppState, Entry, FoodEntry, Goal, ISODate, Meal, Theme } from '../types';
+import type { AppState, Entry, FoodEntry, Goal, ISODate, Meal, SavedPhoto, Theme } from '../types';
+import type { CoachPlan, CoachProfile, WeighIn, WorkoutSession } from '../coach/schema';
 import { newId } from '../lib/dates';
 import { createTemplateGoals } from './template';
 import { createEmptyState } from './storage';
@@ -17,7 +18,27 @@ export type Action =
   | { type: 'SET_THEME'; theme: Theme }
   | { type: 'MARK_CELEBRATED'; key: string; milestone: number }
   | { type: 'IMPORT'; state: AppState }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  // ----- AI Coach -----
+  | { type: 'SET_COACH_PROFILE'; profile: CoachProfile }
+  | { type: 'SET_COACH_PLAN'; plan: CoachPlan }
+  | { type: 'SET_WORKOUT_GOAL'; goalId: string | undefined }
+  | { type: 'SAVE_ACTIVE_SESSION'; session: WorkoutSession | undefined }
+  | { type: 'FINISH_SESSION'; session: WorkoutSession }
+  | { type: 'ADD_WEIGH_IN'; weighIn: WeighIn }
+  | { type: 'DELETE_WEIGH_IN'; id: string }
+  | { type: 'SAVE_PHOTO'; photo: SavedPhoto }
+  | { type: 'DELETE_PHOTOS' }
+  | { type: 'TOGGLE_GROCERY'; key: string }
+  | { type: 'RESET_COACH' };
+
+// Upserts the one entry for goal+date (shared by SET_ENTRY and finishing a workout).
+function setEntry(state: AppState, goalId: string, date: ISODate, patch: Pick<Entry, 'done' | 'value' | 'text'>): AppState {
+  const existing = state.entries.find((e) => e.goalId === goalId && e.date === date);
+  const next: Entry = existing ? { ...existing, ...patch } : { id: newId(), goalId, date, ...patch };
+  const others = state.entries.filter((e) => e !== existing);
+  return { ...state, entries: isEmptyEntry(next) ? others : [...others, next] };
+}
 
 // An entry with nothing in it means "not done", so we drop it instead of storing noise.
 function isEmptyEntry(e: Entry): boolean {
@@ -41,15 +62,9 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'LOAD_TEMPLATE':
       return { ...state, goals: [...state.goals, ...createTemplateGoals(action.today)] };
 
-    case 'SET_ENTRY': {
+    case 'SET_ENTRY':
       // One entry per goal per day: update it if it exists, otherwise create it.
-      const existing = state.entries.find((e) => e.goalId === action.goalId && e.date === action.date);
-      const next: Entry = existing
-        ? { ...existing, ...action.patch }
-        : { id: newId(), goalId: action.goalId, date: action.date, ...action.patch };
-      const others = state.entries.filter((e) => e !== existing);
-      return { ...state, entries: isEmptyEntry(next) ? others : [...others, next] };
-    }
+      return setEntry(state, action.goalId, action.date, action.patch);
 
     case 'TOGGLE_MILESTONE':
       return {
@@ -91,5 +106,72 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'RESET':
       return createEmptyState();
+
+    // ----- AI Coach -----
+
+    case 'SET_COACH_PROFILE':
+      return { ...state, coachProfile: action.profile };
+
+    case 'SET_COACH_PLAN': {
+      // Link the Workout goal automatically the first time: a goal titled "Workout".
+      const autoGoal = state.goals.find((g) => !g.archived && /workout/i.test(g.title));
+      return {
+        ...state,
+        coachPlan: action.plan,
+        workoutGoalId: state.workoutGoalId ?? autoGoal?.id,
+        groceryChecked: [], // new plan, new grocery list
+        activeSession: undefined, // its routine ids may no longer exist
+      };
+    }
+
+    case 'SET_WORKOUT_GOAL':
+      return { ...state, workoutGoalId: action.goalId };
+
+    case 'SAVE_ACTIVE_SESSION':
+      return { ...state, activeSession: action.session };
+
+    case 'FINISH_SESSION': {
+      const withSession: AppState = {
+        ...state,
+        sessions: [...state.sessions, action.session],
+        activeSession: undefined,
+      };
+      // Tick the Part 1 Workout goal for that day, so weekly progress and streaks update.
+      return state.workoutGoalId ? setEntry(withSession, state.workoutGoalId, action.session.date, { done: true }) : withSession;
+    }
+
+    case 'ADD_WEIGH_IN':
+      // One weigh-in per day: a second one the same day replaces the first.
+      return { ...state, weighIns: [...state.weighIns.filter((w) => w.date !== action.weighIn.date), action.weighIn] };
+
+    case 'DELETE_WEIGH_IN':
+      return { ...state, weighIns: state.weighIns.filter((w) => w.id !== action.id) };
+
+    case 'SAVE_PHOTO':
+      // Keep at most 6 photos so localStorage (about 5 MB) doesn't fill up.
+      return { ...state, savedPhotos: [...state.savedPhotos, action.photo].slice(-6) };
+
+    case 'DELETE_PHOTOS':
+      return { ...state, savedPhotos: [] };
+
+    case 'TOGGLE_GROCERY':
+      return {
+        ...state,
+        groceryChecked: state.groceryChecked.includes(action.key)
+          ? state.groceryChecked.filter((k) => k !== action.key)
+          : [...state.groceryChecked, action.key],
+      };
+
+    case 'RESET_COACH':
+      return {
+        ...state,
+        coachProfile: undefined,
+        coachPlan: undefined,
+        sessions: [],
+        activeSession: undefined,
+        weighIns: [],
+        savedPhotos: [],
+        groceryChecked: [],
+      };
   }
 }

@@ -8,6 +8,7 @@ import { getEntry, isGoalDoneOnDate, milestonesForDate, weekTotal, weeklyTarget 
 import { getStreak } from '../lib/streaks';
 import { weekStart } from '../lib/dates';
 import StreakBadge from './StreakBadge';
+import TodayWorkout from './coach/TodayWorkout';
 import DailyCheck from './goal-controls/DailyCheck';
 import CountCheck from './goal-controls/CountCheck';
 import NumberInput from './goal-controls/NumberInput';
@@ -119,6 +120,8 @@ export default function GoalCard({ goal, date, today, index }: Props) {
         <StreakBadge streak={streak} />
       </div>
       <div className="relative">{renderControl()}</div>
+      {/* Today only: the AI Coach workout linked to this goal */}
+      {goal.id === state.workoutGoalId && date === today && <TodayWorkout date={date} />}
       {linksToFood && (
         <Link
           to="/food"

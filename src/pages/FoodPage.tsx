@@ -8,6 +8,7 @@ import { addDaysISO, formatLong } from '../lib/dates';
 import DateNav from '../components/DateNav';
 import IOSSwitch from '../components/IOSSwitch';
 import SwipeDays from '../components/SwipeDays';
+import PlannedMeals from '../components/coach/PlannedMeals';
 
 const MEAL_LABELS: Record<Meal, string> = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snacks' };
 
@@ -148,6 +149,7 @@ export default function FoodPage() {
         resetLabel="Back to today"
       />
       <EatingRules />
+      <PlannedMeals date={date} />
       <SwipeDays swipeKey={date} onPrev={() => setPicked(addDaysISO(date, -1))} onNext={() => setPicked(addDaysISO(date, 1))}>
         <div className="space-y-4">
           {MEALS.map((meal) => (

@@ -1,0 +1,16 @@
+{
+  // Type-checks the server function (api/) with Node types. The browser app uses tsconfig.json.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "types": ["node"]
+  },
+  "include": ["api", "src/coach/schema.ts", "src/coach/safety.ts"]
+}

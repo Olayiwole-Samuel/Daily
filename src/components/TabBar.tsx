@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { haptic } from '../lib/haptics';
-import { CalendarDays, CheckCircle2, ListTodo, Settings, UtensilsCrossed, type LucideIcon } from 'lucide-react';
+import { Bot, CalendarDays, CheckCircle2, ListTodo, Settings, UtensilsCrossed, type LucideIcon } from 'lucide-react';
 
 const TABS: { to: string; label: string; icon: LucideIcon; color: string }[] = [
   { to: '/', label: 'Today', icon: CheckCircle2, color: '#00f0ff' },
   { to: '/week', label: 'Week', icon: CalendarDays, color: '#ff2bd6' },
+  { to: '/coach', label: 'Coach', icon: Bot, color: '#ff8a00' },
   { to: '/goals', label: 'Goals', icon: ListTodo, color: '#39ff14' },
   { to: '/food', label: 'Food', icon: UtensilsCrossed, color: '#ffe600' },
   { to: '/settings', label: 'Settings', icon: Settings, color: '#b026ff' },

@@ -3,7 +3,7 @@ import { Download, LogOut, Monitor, Moon, Sun, Trash2, Upload } from 'lucide-rea
 import { useAuth } from '../auth/AuthContext';
 import type { AppState, Theme } from '../types';
 import { useApp } from '../state/AppContext';
-import { isAppState, normalizeState } from '../state/storage';
+import { isStoredState, migrateState } from '../state/storage';
 import { todayISO } from '../lib/dates';
 import ConfirmDialog from '../components/ConfirmDialog';
 import SegmentedControl from '../components/SegmentedControl';
@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = useState<AppState | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmCoach, setConfirmCoach] = useState<'photos' | 'coach' | null>(null);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   function exportData() {
@@ -40,11 +41,11 @@ export default function SettingsPage() {
     if (!file) return;
     try {
       const parsed: unknown = JSON.parse(await file.text());
-      if (!isAppState(parsed)) {
+      if (!isStoredState(parsed)) {
         setMessage({ text: "That file doesn't look like a Weekly Goals backup.", error: true });
         return;
       }
-      setPendingImport(normalizeState(parsed)); // ask before replacing everything
+      setPendingImport(migrateState(parsed)); // ask before replacing everything
     } catch {
       setMessage({ text: "Couldn't read that file. Is it a .json backup?", error: true });
     }
@@ -115,6 +116,26 @@ export default function SettingsPage() {
         )}
       </section>
 
+      <section className="card space-y-3" aria-labelledby="coach-heading">
+        <h2 id="coach-heading" className="font-semibold">
+          AI Coach
+        </h2>
+        <p className="muted text-sm">
+          {state.savedPhotos.length === 0
+            ? 'No progress photos are saved on this device.'
+            : `${state.savedPhotos.length} progress photo${state.savedPhotos.length === 1 ? '' : 's'} saved on this device only.`}{' '}
+          Photos sent for a plan are never stored on the server.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-secondary" disabled={state.savedPhotos.length === 0} onClick={() => setConfirmCoach('photos')}>
+            <Trash2 className="h-4 w-4" aria-hidden /> Delete my photos
+          </button>
+          <button type="button" className="btn-secondary" disabled={!state.coachProfile && !state.coachPlan} onClick={() => setConfirmCoach('coach')}>
+            <Trash2 className="h-4 w-4" aria-hidden /> Reset coach
+          </button>
+        </div>
+      </section>
+
       <section className="card space-y-3 border-red-200 dark:border-red-900" aria-labelledby="danger-heading">
         <h2 id="danger-heading" className="font-semibold text-red-700 dark:text-red-400">
           Reset
@@ -136,6 +157,23 @@ export default function SettingsPage() {
           if (pendingImport) dispatch({ type: 'IMPORT', state: pendingImport });
           setPendingImport(null);
           setMessage({ text: 'Backup imported.' });
+        }}
+      />
+      <ConfirmDialog
+        open={confirmCoach !== null}
+        title={confirmCoach === 'photos' ? 'Delete all progress photos?' : 'Reset the AI Coach?'}
+        message={
+          confirmCoach === 'photos'
+            ? "This permanently deletes the progress photos saved on this device. It can't be undone."
+            : "This deletes your coach details, plan, workouts, weigh-ins and photos from this device. Your goals and streaks stay. It can't be undone."
+        }
+        confirmLabel={confirmCoach === 'photos' ? 'Delete photos' : 'Reset coach'}
+        danger
+        onCancel={() => setConfirmCoach(null)}
+        onConfirm={() => {
+          dispatch({ type: confirmCoach === 'photos' ? 'DELETE_PHOTOS' : 'RESET_COACH' });
+          setMessage({ text: confirmCoach === 'photos' ? 'Photos deleted.' : 'Coach reset.' });
+          setConfirmCoach(null);
         }}
       />
       <ConfirmDialog

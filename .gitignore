@@ -3,3 +3,6 @@ dist
 dev-dist
 *.local
 .vercel
+.env
+.env.*
+!.env.example

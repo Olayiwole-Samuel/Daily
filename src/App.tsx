@@ -18,6 +18,11 @@ import WeekPage from './pages/WeekPage';
 import GoalsPage from './pages/GoalsPage';
 import FoodPage from './pages/FoodPage';
 import SettingsPage from './pages/SettingsPage';
+import CoachPage from './pages/coach/CoachPage';
+import CoachStartPage from './pages/coach/CoachStartPage';
+import MealsPage from './pages/coach/MealsPage';
+import ProgressPage from './pages/coach/ProgressPage';
+import SessionPage from './pages/coach/SessionPage';
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Today',
@@ -25,6 +30,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/goals': 'Goals',
   '/food': 'Food',
   '/settings': 'Settings',
+  '/coach': 'My plan',
+  '/coach/start': 'Coach setup',
+  '/coach/meals': 'Meals',
+  '/coach/progress': 'Progress',
 };
 
 // The signed-in app: nav, animated page switching, celebrations.
@@ -58,6 +67,11 @@ function Shell() {
               <Route path="/goals" element={<GoalsPage />} />
               <Route path="/food" element={<FoodPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/coach" element={<CoachPage />} />
+              <Route path="/coach/start" element={<CoachStartPage />} />
+              <Route path="/coach/meals" element={<MealsPage />} />
+              <Route path="/coach/progress" element={<ProgressPage />} />
+              <Route path="/coach/session/:routineId" element={<SessionPage />} />
               <Route path="*" element={<TodayPage />} />
             </Routes>
           </motion.div>

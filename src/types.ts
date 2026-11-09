@@ -1,4 +1,5 @@
 // All the shapes of data the app works with, in one place.
+import type { CoachPlan, CoachProfile, WeighIn, WorkoutSession } from './coach/schema';
 
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Monday
 export type GoalType = 'daily' | 'weeklyCount' | 'numberTarget' | 'milestones' | 'journal';
@@ -53,14 +54,30 @@ export interface StreakInfo {
 
 export type Theme = 'light' | 'dark' | 'system';
 
+// A progress photo kept ONLY on this device, and only if the user opted in.
+export interface SavedPhoto {
+  id: string;
+  date: ISODate;
+  dataUrl: string; // small JPEG (data: URL)
+}
+
 export interface AppState {
-  version: 1;
+  version: 2;
   goals: Goal[];
   entries: Entry[];
   food: FoodEntry[];
   eatingRules: string[];
   settings: { theme: Theme };
   celebratedStreaks: Record<string, number>; // goalId -> last milestone celebrated
+  // ----- AI Coach (added in version 2) -----
+  coachProfile?: CoachProfile;
+  coachPlan?: CoachPlan;
+  sessions: WorkoutSession[];
+  activeSession?: WorkoutSession; // an unfinished workout, so it can be resumed
+  weighIns: WeighIn[];
+  workoutGoalId?: string; // Part 1 goal ticked when a workout is finished
+  savedPhotos: SavedPhoto[];
+  groceryChecked: string[]; // "section|item" keys ticked on the grocery list
 }
 
 // Human-friendly labels, used by forms and cards.
