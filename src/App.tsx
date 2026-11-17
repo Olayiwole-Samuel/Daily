@@ -4,9 +4,11 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { useAuth } from './auth/AuthContext';
 import { AppProvider } from './state/AppContext';
 import { storageKeyFor } from './state/storage';
+import { CloudSyncProvider } from './sync/CloudSync';
 import TabBar from './components/TabBar';
 import TopBar from './components/TopBar';
 import Toast from './components/Toast';
+import GoalTakeover from './components/GoalTakeover';
 import NeonBackground from './components/NeonBackground';
 import ClickSparks from './components/ClickSparks';
 import SplashScreen from './components/SplashScreen';
@@ -78,6 +80,7 @@ function Shell() {
         </AnimatePresence>
       </main>
       <Toast message={message} onClose={clear} />
+      <GoalTakeover />
     </div>
   );
 }
@@ -94,7 +97,10 @@ export default function App() {
       <ClickSparks />
       {user ? (
         <AppProvider key={user.id} storageKey={storageKeyFor(user.id)}>
-          <Shell />
+          {/* Backs up this account's data and keeps devices in sync */}
+          <CloudSyncProvider>
+            <Shell />
+          </CloudSyncProvider>
         </AppProvider>
       ) : (
         <LoginPage />

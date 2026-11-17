@@ -87,7 +87,12 @@ export default function GoalsPage() {
                 {GOAL_TYPE_LABELS[goal.type]} · {describeDays(goal)}
                 {describeTarget(goal) && ` · ${describeTarget(goal)}`}
               </p>
-              {goal.note && <p className="muted text-sm">{goal.note}</p>}
+              {(goal.note || goal.reminderTime) && (
+              <p className="muted text-sm">
+                {goal.reminderTime && <span className="mr-2 font-semibold text-neon-pink dark:text-neon-cyan">⏰ {goal.reminderTime}</span>}
+                {goal.note}
+              </p>
+            )}
             </div>
             <button type="button" className="icon-btn" aria-label={`Edit ${goal.title}`} onClick={() => setEditing(goal)}>
               <Pencil className="h-5 w-5" aria-hidden />

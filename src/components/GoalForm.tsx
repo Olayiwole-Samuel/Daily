@@ -66,6 +66,7 @@ export default function GoalForm({ initial, onSave, onCancel }: Props) {
       ...draft,
       title: draft.title.trim(),
       note: draft.note?.trim() || undefined,
+      reminderTime: draft.reminderTime || undefined,
       unit: hasTarget(draft.type) ? draft.unit?.trim() || undefined : undefined,
       target: hasTarget(draft.type) ? draft.target : undefined,
       milestones:
@@ -178,7 +179,30 @@ export default function GoalForm({ initial, onSave, onCancel }: Props) {
         <label htmlFor="goal-note" className="label">
           Note <span className="muted font-normal">(optional)</span>
         </label>
-        <input id="goal-note" className="input" value={draft.note ?? ''} onChange={(e) => set('note', e.target.value)} placeholder="e.g. 6:00am" />
+        <input id="goal-note" className="input" value={draft.note ?? ''} onChange={(e) => set('note', e.target.value)} placeholder="e.g. 30 min" />
+      </div>
+
+      <div>
+        <label htmlFor="goal-time" className="label">
+          Time <span className="muted font-normal">(optional)</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="goal-time"
+            type="time"
+            className="input"
+            value={draft.reminderTime ?? ''}
+            onChange={(e) => set('reminderTime', e.target.value || undefined)}
+          />
+          {draft.reminderTime && (
+            <button type="button" className="btn-secondary shrink-0" onClick={() => set('reminderTime', undefined)}>
+              Clear
+            </button>
+          )}
+        </div>
+        <p className="muted mt-1 text-xs">
+          At this time you get an alert, and the app takes over the screen until you do it or ask it to stop.
+        </p>
       </div>
 
       {draft.type === 'milestones' && (

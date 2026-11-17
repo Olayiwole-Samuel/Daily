@@ -71,6 +71,35 @@ time limit to 300 s, since writing a full plan takes about a minute).
 - Limit of 5 plans per device per day. **Limitation:** the count lives in the function's memory, so it resets when
   Vercel restarts the function. For a hard limit, store counts in Upstash Redis (Vercel Marketplace).
 
+## Cloud backup, goal times and alerts
+
+- **Cloud backup:** each user's data (goals, entries, food, coach plan, workouts, weigh-ins) is stored in a Neon
+  Postgres database and synced across their devices. Progress photos never leave the phone. The server identifies
+  users with a signed session cookie made after checking their Google sign-in with Google; a user can only ever read
+  or write their own data.
+- **Goal times:** give a goal a time in its settings. From that time, if it isn't done, a full-screen takeover locks
+  the app until you finish it or ask it to stop (say "stop" or type it). A web app can't lock other apps.
+- **Alerts:** with alerts on (Settings), each goal's time also sends a notification, even when the app is closed.
+  On iPhone this needs the app added to the Home Screen (iOS 16.4+).
+
+### One-time setup
+
+1. **Database:** Vercel → project **daily** → **Storage** → **Create Database** → **Neon** → connect it to the project.
+   This adds `DATABASE_URL` automatically. Tables are created on first use.
+2. **Secrets:** run `npm run secrets` and add the four values it prints (`SESSION_SECRET`, `CRON_SECRET`,
+   `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`) in Vercel → Settings → Environment Variables (type Secret, Production).
+3. **Redeploy** (Deployments → latest → Redeploy).
+4. **Scheduler for alerts:** Vercel's free plan only runs scheduled jobs once a day, so use https://cron-job.org (free):
+   create a job that runs **every minute** with URL `https://daily-opal-eight.vercel.app/api/reminders/tick`, and under
+   Advanced add the header `Authorization` = `Bearer <your CRON_SECRET>`.
+
+Users who were already signed in tap **Settings → Turn on cloud backup** once.
+
+### Trying it locally
+
+Add to `.env.local`: `DATABASE_URL=memory` (a throwaway in-memory database, local only) and a `SESSION_SECRET` of
+32+ characters, then `npm run dev`. Alerts only work in the deployed, installed app.
+
 ## Where things live
 
 - `src/types.ts`: the data model (app data is version 2; `src/state/storage.ts` migrates version 1)

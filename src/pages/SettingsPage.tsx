@@ -7,6 +7,7 @@ import { isStoredState, migrateState } from '../state/storage';
 import { todayISO } from '../lib/dates';
 import ConfirmDialog from '../components/ConfirmDialog';
 import SegmentedControl from '../components/SegmentedControl';
+import CloudSettings from '../components/CloudSettings';
 
 const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: 'light', label: 'Light', icon: Sun },
@@ -73,6 +74,8 @@ export default function SettingsPage() {
           <LogOut className="h-4 w-4" aria-hidden /> Sign out
         </button>
       </section>
+
+      <CloudSettings />
 
       <section className="card" aria-labelledby="theme-heading">
         <h2 id="theme-heading" className="mb-3 font-semibold">

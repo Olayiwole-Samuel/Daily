@@ -68,7 +68,9 @@ interface UserInfo {
 
 // Must be called straight from a click handler: browsers only allow popups
 // that come directly from a user action.
-export function signInWithGoogle(clientId: string): Promise<AuthUser> {
+// Returns the user plus the short-lived access token, which the app hands to
+// its own server once so the server can confirm who you are (see api/auth/session.ts).
+export function signInWithGoogle(clientId: string): Promise<{ user: AuthUser; accessToken: string }> {
   return new Promise((resolve, reject) => {
     const google = window.google;
     if (!google) {
@@ -89,7 +91,7 @@ export function signInWithGoogle(clientId: string): Promise<AuthUser> {
           });
           if (!res.ok) throw new Error('Could not load your Google profile.');
           const info = (await res.json()) as UserInfo;
-          resolve({ id: info.sub, email: info.email, name: info.name || info.email, picture: info.picture });
+          resolve({ user: { id: info.sub, email: info.email, name: info.name || info.email, picture: info.picture }, accessToken: response.access_token });
         } catch (e) {
           reject(e instanceof Error ? e : new Error('Sign-in failed.'));
         }

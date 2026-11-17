@@ -30,7 +30,9 @@ export type Action =
   | { type: 'SAVE_PHOTO'; photo: SavedPhoto }
   | { type: 'DELETE_PHOTOS' }
   | { type: 'TOGGLE_GROCERY'; key: string }
-  | { type: 'RESET_COACH' };
+  | { type: 'RESET_COACH' }
+  // ----- Goal-time takeover -----
+  | { type: 'STOP_TAKEOVER'; key: string }; // key = goalId|date
 
 // Upserts the one entry for goal+date (shared by SET_ENTRY and finishing a workout).
 function setEntry(state: AppState, goalId: string, date: ISODate, patch: Pick<Entry, 'done' | 'value' | 'text'>): AppState {
@@ -161,6 +163,10 @@ export function reducer(state: AppState, action: Action): AppState {
           ? state.groceryChecked.filter((k) => k !== action.key)
           : [...state.groceryChecked, action.key],
       };
+
+    case 'STOP_TAKEOVER':
+      // Keep only recent keys so the list doesn't grow forever.
+      return { ...state, stoppedTakeovers: [...(state.stoppedTakeovers ?? []).filter((k) => k !== action.key), action.key].slice(-60) };
 
     case 'RESET_COACH':
       return {

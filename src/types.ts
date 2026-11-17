@@ -21,6 +21,7 @@ export interface Goal {
   target?: number; // weeklyCount: 5, numberTarget: 150
   unit?: string; // 'pages', 'min'
   note?: string; // '6:00am'
+  reminderTime?: string; // 'HH:MM' local time: alert + full-screen takeover if not done by then
   milestones?: Milestone[];
   archived: boolean;
   createdAt: ISODate;
@@ -78,6 +79,8 @@ export interface AppState {
   workoutGoalId?: string; // Part 1 goal ticked when a workout is finished
   savedPhotos: SavedPhoto[];
   groceryChecked: string[]; // "section|item" keys ticked on the grocery list
+  // ----- Goal-time takeover -----
+  stoppedTakeovers: string[]; // "goalId|date": you asked the takeover to stop for that goal that day
 }
 
 // Human-friendly labels, used by forms and cards.

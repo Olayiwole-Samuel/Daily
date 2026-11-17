@@ -10,7 +10,9 @@
     "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": ["node"]
+    "types": ["node"],
+    "esModuleInterop": true
   },
-  "include": ["api", "src/coach/schema.ts", "src/coach/safety.ts"]
+  "include": ["api", "src/coach/schema.ts", "src/coach/safety.ts", "src/coach/rules", "src/sync/shared.ts"],
+  "exclude": ["src/**/*.test.ts", "api/**/*.test.ts"]
 }

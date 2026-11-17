@@ -115,7 +115,12 @@ export default function GoalCard({ goal, date, today, index }: Props) {
       <div className="relative mb-2 flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <h2 className="text-lg font-bold">{goal.title}</h2>
-          {goal.note && <p className="muted text-sm">{goal.note}</p>}
+          {(goal.note || goal.reminderTime) && (
+            <p className="muted text-sm">
+              {goal.reminderTime && <span className="mr-2 font-semibold text-neon-pink dark:text-neon-cyan">⏰ {goal.reminderTime}</span>}
+              {goal.note}
+            </p>
+          )}
         </div>
         <StreakBadge streak={streak} />
       </div>

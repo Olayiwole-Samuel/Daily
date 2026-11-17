@@ -24,6 +24,7 @@ export function createEmptyState(): AppState {
     weighIns: [],
     savedPhotos: [],
     groceryChecked: [],
+    stoppedTakeovers: [],
   };
 }
 
@@ -92,6 +93,7 @@ export function migrateState(stored: Record<string, unknown>): AppState {
     workoutGoalId: typeof stored.workoutGoalId === 'string' ? stored.workoutGoalId : undefined,
     savedPhotos: validItems(SavedPhotoSchema, stored.savedPhotos),
     groceryChecked: Array.isArray(stored.groceryChecked) ? stored.groceryChecked.filter((k): k is string => typeof k === 'string') : [],
+    stoppedTakeovers: Array.isArray(stored.stoppedTakeovers) ? stored.stoppedTakeovers.filter((k): k is string => typeof k === 'string') : [],
   };
 }
 

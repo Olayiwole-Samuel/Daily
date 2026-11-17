@@ -28,9 +28,9 @@ export function createTemplateGoals(today: ISODate): Goal[] {
   ];
 
   return [
-    { ...base, id: newId(), title: 'Bible study + prayer', type: 'daily', color: '#b026ff', scheduledDays: ALL_DAYS, note: '30 min, 5:30am' },
-    { ...base, id: newId(), title: 'Workout', type: 'weeklyCount', color: '#ff3864', scheduledDays: ALL_DAYS, target: 5, unit: 'workouts', note: '6:00am' },
-    { ...base, id: newId(), title: '2pm class', type: 'daily', color: '#00f0ff', scheduledDays: WEEKDAYS, note: '2:00pm' },
+    { ...base, id: newId(), title: 'Bible study + prayer', type: 'daily', color: '#b026ff', scheduledDays: ALL_DAYS, note: '30 min', reminderTime: '05:30' },
+    { ...base, id: newId(), title: 'Workout', type: 'weeklyCount', color: '#ff3864', scheduledDays: ALL_DAYS, target: 5, unit: 'workouts', reminderTime: '06:00' },
+    { ...base, id: newId(), title: '2pm class', type: 'daily', color: '#00f0ff', scheduledDays: WEEKDAYS, reminderTime: '14:00' },
     {
       ...base,
       id: newId(),
