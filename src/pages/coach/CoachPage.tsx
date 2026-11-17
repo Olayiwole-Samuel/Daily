@@ -10,6 +10,7 @@ import { addDaysISO, weekDays, weekStart, weekdayIndex, WEEKDAY_SHORT } from '..
 import type { DayMeals, Meal } from '../../coach/schema';
 import BottomSheet from '../../components/BottomSheet';
 import { Disclaimer } from '../../components/coach/Controls';
+import ExerciseFigure from '../../components/coach/ExerciseFigure';
 
 export function MealLine({ label, meal }: { label: string; meal: Meal }) {
   return (
@@ -155,6 +156,16 @@ export default function CoachPage() {
             <p>
               <span className="font-semibold">{todayRoutine.name}</span> <span className="muted">· about {todayRoutine.estimatedMin} min · {todayRoutine.exercises.length} exercises</span>
             </p>
+            {/* Swipeable preview of today's moves, each with its animated character */}
+            <ul className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1" aria-label="Today's exercises">
+              {todayRoutine.exercises.map((e) => (
+                <li key={e.id} className="w-28 shrink-0 snap-start rounded-2xl border border-violet-200 bg-white/50 p-1 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                  <ExerciseFigure name={e.name} size={100} className="mx-auto" />
+                  <p className="text-xs font-semibold leading-tight">{e.name}</p>
+                  <p className="muted text-[11px]">{e.sets} × {e.durationSec !== undefined ? `${e.durationSec} s` : e.reps}</p>
+                </li>
+              ))}
+            </ul>
             {doneToday ? (
               <p className="font-semibold text-neon-lime">Done for today. Nice work! 💪</p>
             ) : (

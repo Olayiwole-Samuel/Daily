@@ -11,6 +11,16 @@ import { newId } from '../../lib/dates';
 import { haptic } from '../../lib/haptics';
 import { neonConfetti } from '../../hooks/useStreakCelebrations';
 import BottomSheet from '../../components/BottomSheet';
+import ExerciseFigure from '../../components/coach/ExerciseFigure';
+
+// The animated character, in a glowing panel at the top of each step.
+function FigurePanel({ name }: { name: string }) {
+  return (
+    <div className="mx-auto flex w-full max-w-[16rem] justify-center rounded-3xl border border-neon-cyan/20 bg-white/[0.03]">
+      <ExerciseFigure name={name} size={220} />
+    </div>
+  );
+}
 
 // Which screen of the workout we're on.
 type Phase = { kind: 'warmup' } | { kind: 'exercise'; index: number } | { kind: 'cooldown' } | { kind: 'summary' };
@@ -248,6 +258,7 @@ export default function SessionPage() {
           <motion.div key={phase.kind === 'exercise' ? `ex-${phase.index}` : phase.kind} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.2 }} className="mx-auto max-w-md space-y-5 pt-4">
             {phase.kind === 'warmup' && (
               <>
+                <FigurePanel name="Fast march on the spot" />
                 <p className="text-sm font-semibold uppercase tracking-widest text-neon-yellow">Warm-up</p>
                 <p className="text-xl leading-relaxed">{routine.warmUp}</p>
                 <p className="text-white/60">
@@ -261,6 +272,7 @@ export default function SessionPage() {
 
             {phase.kind === 'exercise' && exercise && (
               <>
+                <FigurePanel name={exercise.name} />
                 <p className="text-sm font-semibold uppercase tracking-widest text-neon-cyan">
                   Exercise {phase.index + 1} of {routine.exercises.length}
                 </p>
@@ -350,6 +362,7 @@ export default function SessionPage() {
 
             {phase.kind === 'cooldown' && (
               <>
+                <FigurePanel name="Stretch" />
                 <p className="text-sm font-semibold uppercase tracking-widest text-neon-violet">Cool-down</p>
                 <p className="text-xl leading-relaxed">{routine.coolDown}</p>
                 <button type="button" className="btn-primary min-h-[60px] w-full text-lg" onClick={() => setPhase({ kind: 'summary' })}>

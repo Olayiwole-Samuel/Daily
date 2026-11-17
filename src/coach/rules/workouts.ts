@@ -18,7 +18,7 @@ interface ExerciseDef {
   howTo: string;
 }
 
-const LIBRARY: ExerciseDef[] = [
+export const LIBRARY: ExerciseDef[] = [
   // Squat
   { key: 'chair-squat', name: 'Chair squat (sit to stand)', pattern: 'squat', level: 1, lowImpact: true, howTo: 'Sit back to a chair, tap it lightly, stand up through your heels.' },
   { key: 'bw-squat', name: 'Bodyweight squat', pattern: 'squat', level: 1, lowImpact: true, howTo: 'Sit back like into a chair, chest up, knees follow your toes.' },
